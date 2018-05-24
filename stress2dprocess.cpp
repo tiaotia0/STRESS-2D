@@ -27,9 +27,8 @@ Matrix<double, 3, 1> Stress_Process(const Matrix<double, 3, 1> &sumStress, const
 	}
 	else
 	{ //小幅变化
-		Matrix<double, 3, 1> dexpansion;
 		double e = Expansion_In_T(Temperature), enext = Expansion_In_T(Temperature + dt);
-		dexpansion <<enext - e,enext - e, 0;
+		Matrix<double, 3, 1> dexpansion(enext - e, enext - e, 0);
 		//试计算增量
 		Matrix<double, 3, 1> de0 = StrainIncrease_Temperature(sumStress, Temperature, dt);
 		Dep_and_ST Dep_ST = Dep_and_StressInrease_T(sumStress, sumStrain, Temperature, dt);

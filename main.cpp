@@ -4,8 +4,8 @@
 
 int main()
 {
-	std::ifstream filein("C:\\Users\\yl_so\\Desktop\\1-p2.txt"); //文件格式：xx应变，yy应变，xy应变，温度T（单位为摄氏度）
-	std::ofstream fileout("C:\\Users\\yl_so\\Desktop\\1-p2-out.txt");//文件格式：xx应力，yy应力，xy应力
+	std::ifstream filein("C:\\Users\\yl_so\\Desktop\\test.txt"); //文件格式：xx应变，yy应变，xy应变，温度T（单位为摄氏度）
+	std::ofstream fileout("C:\\Users\\yl_so\\Desktop\\out.txt");//文件格式：xx应力，yy应力，xy应力
 	fileout << "Stress xx" << '\t' << "Stress yy" << '\t' << "Stress xy" << std::endl<<0<<'\t'<<0<<'\t'<<0<<std::endl;
 	//初始状态设置
 	Matrix<double, 3, 1> sumStress, sumStrain;

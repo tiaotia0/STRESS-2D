@@ -27,5 +27,5 @@ static const std::vector<double> STRESS = {
 	1,1,1,1,1,1,1
 };
 static const std::vector<double> STRESS300K = { 241.3,289.6,393,482.6,620.5,827.4,1276 };//300k时的屈服应力
-static const std::vector<double> YEILEDSTRESS = { 241.3,117.2,96.5,68.9,27.6,5,1 };//不同温度下的单次加载屈服应力
+static const std::vector<double> YEILEDSTRESS = { 241.3,117.2,96.5,68.9,27.6,5,1 };//不同温度下的首次加载屈服应力
 #endif // !_STRESS2DPROPERTY_

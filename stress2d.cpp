@@ -29,7 +29,7 @@ double Youngmodulus_vs_T(const double &Temperature)
 {
 	//计算杨氏模量对温度的导数
 	double r,ds,d2s; //r是T温度下的杨氏模量，ds是一阶导数，d2s是二阶导
-	if (Temperature < 300) return 0; //假定小于300K时杨氏模量无变化
+	if (Temperature <= 300) return 0; //假定小于300K时杨氏模量无变化
 	else 
 	{
 		const spline1dinterpolant s(Interpolant_Yongmodulus());
@@ -72,7 +72,7 @@ double PoissonRatio_vs_T(const double &Temperature)
 {
 	//计算泊松比对温度的导数
 	double r, ds, d2s; //r是T温度下的泊松比，ds是一阶导数，d2s是二阶导
-	if (Temperature < 300) return 0;  //假定小于300K时泊松比无变化
+	if (Temperature <= 300) return 0;  //假定小于300K时泊松比无变化
 	else
 	{
 		const spline1dinterpolant s(Interpolant_PoissonRatio());
@@ -142,6 +142,7 @@ double T300K_TensileStress_vs_Strain(const double &Strain)
 		delete p2;
 	}
 	double r, ds, d2s; //r是S时的屈服应力值，ds是一阶导数，d2s是二阶导
+	if (Strain < 0) std::cout << "erro: equal plastic strain less than zero! (in function T300K_TensileStress_vs_Strain)" << std::endl;
 	if (Strain == 0) return std::numeric_limits<double>::max(); //Strain是等效塑性应变
 	else
 	{
@@ -181,6 +182,7 @@ const spline2dinterpolant& Interpolant_TensileStress()
 double TensileStress(const double &T, const double &Strain)
 {
 	//计算T温度下等效塑性应变为Strain时的屈服应力
+	if (Strain < 0) std::cout << "erro:equal plastic strain less than zero!(in function TensileStress)" << std::endl;
 	const spline2dinterpolant s(Interpolant_TensileStress());
 	//传入的塑性等效应变总大于等于0,且把温度低于300k时的状态都认为是300k时状态
 	if (T <= 300) return spline2dcalc(s, Strain, 300);
@@ -191,6 +193,7 @@ double TensileStress_vs_Strain(const double &T, const double &Strain)
 	//计算T温度下等效塑性应变为Strain时的实验应力（屈服应力）对于塑性应变的偏导。
 	//因为插值的屈服应力曲面在T<=300K时无导数，故设定当T<=300K时，屈服应力对等效塑性应变等于300K时的屈服应力对塑性等效应变的偏导，屈服应力对T导数为0。
 	//当等效塑性应变为0时，设定屈服应力对等效塑性应变导数为无穷。
+	if (Strain < 0) std::cout << "erro:equal plastic strain less than zero!(in function TensileStress_vs_Strain)" << std::endl;
 	if (Strain == 0) { return std::numeric_limits<double>::max(); } //未屈服时，导数为无穷
 	else
 	{
@@ -208,17 +211,14 @@ double TensileStress_vs_Temper(const double &T, const double &Strain)
 	//计算T温度下 /等效塑性应变/ 为Strain时的  /实验应力（屈服应力）/  对于温度的偏导
 	//因为插值的屈服应力于T和等效塑性应变的曲面在T<=300K时无导数，故设定当T<=300K时，屈服应力对等效塑性应变等于300K时的屈服应力对塑性等效应变的偏导，屈服应力对T导数为0
 	//当等效塑性应变为0时，设定屈服应力对等效塑性应变导数为无穷
-	if (Strain == 0) return 0;  //未屈服时，屈服应力对温度导数为0
+	if (Strain < 0) std::cout << "erro:equal plastic strain less than zero!(in function TensileStress_vs_Temper)" << std::endl;
+	if (T < 300) return 0;
 	else
 	{
-		if (T < 300) return 0;
-		else
-		{
-			double Dtemper, Dstrain, TensileStress, Dtemper_and_strain;
-			const spline2dinterpolant s(Interpolant_TensileStress());
-			spline2ddiff(s, Strain, T, TensileStress, Dstrain, Dtemper, Dtemper_and_strain);
-			return Dtemper;
-		}
+		double Dtemper, Dstrain, TensileStress, Dtemper_and_strain;
+		const spline2dinterpolant s(Interpolant_TensileStress());
+		spline2ddiff(s, Strain, T, TensileStress, Dstrain, Dtemper, Dtemper_and_strain);
+		return Dtemper;
 	}
 }
 Matrix<double, 3, 3> De_In_T(const double &T)
@@ -253,25 +253,44 @@ Matrix<double, 3, 1> Stress_Derivative(const Matrix<double, 3, 1> &stress)
 }
 double Equal_PlasticStrain(const Matrix<double, 3, 1> &Stress, const Matrix<double, 3, 1> &Strain, const double &Temperature)
 {
-	//计算塑性等效应变，Strain为全应变
+	//计算塑性等效应变，Strain为全应变,若新的应力会产生新的塑性变形，则更新并返回，否则返回原值
+	//staus为试算与否，若为试算，则不更新，若不为试算，则更新。
+	static double eq_plasticstrain = 0, preTemperature = 0;
+	static Matrix<double, 3, 1> preStress = { 0, 0, 0 }, preStrain = { 0, 0, 0 };
 	double equal_stress = Equal_Stress(Stress);
-	static double eq_plasticstrain = 0;
 	double y_stress = TensileStress(Temperature, eq_plasticstrain); //T温度下,等效塑性应变为eq_plasticstrain时的屈服应力
 	if (equal_stress> y_stress)  //大于屈服应力时才会计算新等效塑性应变
 	{
-		Matrix<double, 3, 3> De = De_In_T(Temperature);
-		Matrix<double, 3, 1> eStrain, pStrain, expansion;
+		Matrix<double, 3, 3> De = De_In_T(Temperature), pre_De = De_In_T(preTemperature);
+		Matrix<double, 3, 1> eStrain, pre_eStrain, d_pStrain;
 		eStrain = De.inverse()*Stress;
-		double e = Expansion_In_T(Temperature); //e为expansion,热膨胀应变量
-		expansion << e, e, 0;
-		pStrain = Strain - eStrain - expansion;
-		double p1, p2, p3;
-		p1 = pStrain(0, 0); p2 = pStrain(1, 0); p3 = pStrain(2, 0);
-		//double Zpstrain = -u / E*(Stress(0, 0) + Stress(1, 0));
-		eq_plasticstrain = sqrt(2) / sqrt(3)*sqrt(p1*p1 + p2*p2 + 0.5*p3*p3);//+ Zpstrain*Zpstrain);
+		pre_eStrain = pre_De.inverse()*preStress;
+		double expansion_value = Expansion_In_T(Temperature), 
+				pre_expansion_value = Expansion_In_T(preTemperature);
+		Matrix<double, 3, 1> expansion(expansion_value, expansion_value, 0),
+								pre_expansion(pre_expansion_value, pre_expansion_value, 0);
+		d_pStrain = (Strain - preStrain) - (eStrain - pre_eStrain) - (expansion - pre_expansion);
+		double dp1, dp2, dp3;
+		dp1 = d_pStrain(0, 0); dp2 = d_pStrain(1, 0); dp3 = d_pStrain(2, 0);
+		//是否需计算Z向自由变形的塑性应变？
+		//double E = Youngmodulus_In_T(Temperature);
+		//double Zpstrain = -0.5 *(Stress(0, 0) + Stress(1, 0)) / E;
+		double d_eq_plasticstrain = sqrt(2) / sqrt(3)*sqrt(dp1*dp1 + dp2*dp2 + 0.5*dp3*dp3);
+		eq_plasticstrain += d_eq_plasticstrain;
+		//更新preStress及preStrain，preTemprature
+		preStress = Stress;
+		preStrain = Strain; std::cout << 282 << std::endl;
+		preTemperature = Temperature; std::cout << 283 << std::endl;
 		return eq_plasticstrain;
 	}
-	else return eq_plasticstrain; //若等效应力未增加，则不重新计算，返回上一个状态的等效塑性应变
+	else  //若等效应力未增加，则不重新计算，返回上一个状态的等效塑性应变
+	{
+		//更新preStress及preStrain，preTemprature
+		preStress = Stress;
+		preStrain = Strain;
+		preTemperature = Temperature;
+		return eq_plasticstrain;
+	} 
 }
 double Equal_Stress(const Matrix<double, 3, 1> &Stress)
 {
