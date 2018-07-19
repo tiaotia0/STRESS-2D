@@ -15,10 +15,16 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="stress2d.h">
+    <ClInclude Include="SUS304properties.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="stress2dproperty.h">
+    <ClInclude Include="SUS304function.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="stressfunction.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="stress2dprocess.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -65,10 +71,13 @@
     <ClCompile Include="..\ALGLIB\src\statistics.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="stress2d.cpp">
+    <ClCompile Include="stress2dprocess.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="stress2dprocess.cpp">
+    <ClCompile Include="SUS304function.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="stressfunction.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

@@ -1,0 +1,3 @@
+﻿  main.cpp
+c:\users\yl_so\desktop\stress-2d\stress-2d\main.cpp(70): warning C4267: “初始化”: 从“size_t”转换到“int”，可能丢失数据
+  stress-2D.vcxproj -> C:\Users\yl_so\Desktop\stress-2D\x64\Debug\stress-2D.exe

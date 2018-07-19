@@ -114,8 +114,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="stress2dproperty.h" />
-    <ClInclude Include="stress2d.h" />
+    <ClInclude Include="stress2dprocess.h" />
+    <ClInclude Include="stressfunction.h" />
+    <ClInclude Include="SUS304properties.h" />
+    <ClInclude Include="SUS304function.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\ALGLIB\src\alglibinternal.cpp" />
@@ -133,7 +135,8 @@
     <ClCompile Include="..\ALGLIB\src\statistics.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="stress2dprocess.cpp" />
-    <ClCompile Include="stress2d.cpp" />
+    <ClCompile Include="stressfunction.cpp" />
+    <ClCompile Include="SUS304function.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
